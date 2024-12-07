@@ -29,25 +29,24 @@ void top_down_step(
     Graph g,
     vertex_set* frontier,
     vertex_set* new_frontier,
-    int* distances)
-{
+    int* distances) {
 
+#pragma omp parallel for
     for (int i=0; i<frontier->count; i++) {
-
         int node = frontier->vertices[i];
 
         int start_edge = g->outgoing_starts[node];
         int end_edge = (node == g->num_nodes - 1)
-                           ? g->num_edges
-                           : g->outgoing_starts[node + 1];
-
+                        ? g->num_edges
+                        : g->outgoing_starts[node + 1];
         // attempt to add all neighbors to the new frontier
         for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
-
             if (distances[outgoing] == NOT_VISITED_MARKER) {
                 distances[outgoing] = distances[node] + 1;
-                int index = new_frontier->count++;
+                int index = 0;
+                #pragma omp atomic capture
+                index = new_frontier->count++;
                 new_frontier->vertices[index] = outgoing;
             }
         }
@@ -98,6 +97,7 @@ void bfs_top_down(Graph graph, solution* sol) {
     }
 }
 
+
 void bfs_bottom_up(Graph graph, solution* sol)
 {
     // CS149 students:
@@ -111,6 +111,7 @@ void bfs_bottom_up(Graph graph, solution* sol)
     // As was done in the top-down case, you may wish to organize your
     // code by creating subroutine bottom_up_step() that is called in
     // each step of the BFS process.
+
 }
 
 void bfs_hybrid(Graph graph, solution* sol)
